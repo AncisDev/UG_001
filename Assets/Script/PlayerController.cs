@@ -1,32 +1,61 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 5.0f;
+    private Rigidbody Player;
+    private Animator animator;
 
-    private Rigidbody rigibody;
+    public float speed = 30;
+    public float gravity = -9.8f;
 
+    // Start is called before the first frame update
     void Start()
     {
-        rigibody = GetComponent<Rigidbody>();
+        Player = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
     }
 
-    void FixedUpdate()
+    // Update is called once per frame
+    void Update()
     {
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveY = Input.GetAxisRaw("Vertical");
+        float hor = Input.GetAxis("Horizontal");
+        float ver = Input.GetAxis("Vertical");
+        Vector3 movement = Vector3.zero;
+        float movSpeed = 0;
 
-        if (moveY != 0.0f || moveX != 0.0f)
+        if (hor != 0 || ver != 0)
         {
-            Vector3 dir = (transform.forward * moveY + transform.right * moveX);
+            Vector3 forward = transform.forward;
+            forward.y = 0;
+            forward.Normalize();
 
-            rigibody.MovePosition(transform.position + dir);
+            Vector3 right = transform.right;
+            right.y = 0;
+            right.Normalize();
 
+            Vector3 direction = forward * ver + right * hor;
+            movSpeed = Mathf.Clamp01(direction.magnitude);
+            direction.Normalize();
+
+            if (ver <= 0)
+            {
+                movement = direction * 20 * movSpeed * Time.deltaTime;
+            }
+            else
+            {
+                movement = direction * speed * movSpeed * Time.deltaTime;
+            }
+            //movement = direction * speed * movSpeed * Time.deltaTime;
+
+            //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 0.2f);
         }
 
+    //movement.y += gravity * Time.deltaTime;
+
+    Player.MovePosition(transform.position + movement);
+    animator.SetFloat("ySpeed", ver);
+    animator.SetFloat("xSpeed", hor);
     }
 }
-
