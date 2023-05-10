@@ -1,61 +1,90 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private Rigidbody Player;
+    private CharacterController Player;
+    //private Rigidbody Player;
     private Animator animator;
 
-    public float speed = 30;
-    public float gravity = -9.8f;
+    //movimiento
+    public float fSpeed = 30f;
+    public float bSpeed = 20f;
 
-    // Start is called before the first frame update
+    private float hor;
+    private float ver;
+    private Vector3 playerInput;
+
+    //Camara
+    public Camera mainCam;
+
+    private Vector3 forward;
+    private Vector3 right;
+    private Vector3 movePlayer;
+
+    //gravedad
+    public float gravity = 9.81f;
+
     void Start()
     {
-        Player = GetComponent<Rigidbody>();
+        Player = GetComponent<CharacterController>();
+        //Player = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        float hor = Input.GetAxis("Horizontal");
-        float ver = Input.GetAxis("Vertical");
-        Vector3 movement = Vector3.zero;
-        float movSpeed = 0;
-
+        hor = Input.GetAxis("Horizontal");
+        ver = Input.GetAxis("Vertical");
+       
         if (hor != 0 || ver != 0)
         {
-            Vector3 forward = transform.forward;
-            forward.y = 0;
-            forward.Normalize();
+            playerInput = new Vector3(hor,0,ver);
+            playerInput = Vector3.ClampMagnitude(playerInput, 1);
 
-            Vector3 right = transform.right;
-            right.y = 0;
-            right.Normalize();
+            CamDirection();
 
-            Vector3 direction = forward * ver + right * hor;
-            movSpeed = Mathf.Clamp01(direction.magnitude);
-            direction.Normalize();
-
+            movePlayer = playerInput.x * forward + playerInput.z * right;
             if (ver <= 0)
             {
-                movement = direction * 20 * movSpeed * Time.deltaTime;
+                movePlayer = movePlayer * fSpeed;
             }
             else
             {
-                movement = direction * speed * movSpeed * Time.deltaTime;
+                movePlayer = movePlayer * bSpeed;
             }
-            //movement = direction * speed * movSpeed * Time.deltaTime;
 
-            //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 0.2f);
+            SetGravity();
+
+            Player.Move(playerInput * Time.deltaTime);
+            //Player.MovePosition(transform.position + playerInput * Time.deltaTime);
+
+            Debug.Log(Player.velocity.magnitude);      
+
+            animator.SetFloat("ySpeed", ver);
+            animator.SetFloat("xSpeed", hor);
         }
 
-    //movement.y += gravity * Time.deltaTime;
+        
+    }
 
-    Player.MovePosition(transform.position + movement);
-    animator.SetFloat("ySpeed", ver);
-    animator.SetFloat("xSpeed", hor);
+    void CamDirection()
+    {
+        forward = mainCam.transform.forward;
+        right = mainCam.transform.right;
+
+        forward.y = 0;
+        right.y = 0;
+
+        forward = forward.normalized;
+        right = right.normalized;
+    }
+
+    void SetGravity()
+    {
+        movePlayer.y = -gravity * Time.deltaTime;
     }
 }

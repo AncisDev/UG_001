@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private CharacterController characterController;
+    private CharacterController pj;
     private Animator animator;
 
     public new Transform camera;
@@ -14,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        characterController = GetComponent<CharacterController>();
+        pj = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
     }
 
@@ -42,12 +42,13 @@ public class PlayerMovement : MonoBehaviour
 
             movement = direction * speed * movementSpeed * Time.deltaTime;
 
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 0.2f);
+            //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 0.2f);
         }
 
         movement.y += gravity * Time.deltaTime;
 
-        characterController.Move(movement);
-        animator.SetFloat("Speed", movementSpeed);
+        pj.Move(movement);
+        animator.SetFloat("ySpeed", ver);
+        animator.SetFloat("xSpeed", hor);
     }
 }
